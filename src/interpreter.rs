@@ -1,6 +1,7 @@
 use command::Command;
 use parser::Parser;
 use libc::getchar;
+use errors::ErrorKind;
 
 pub struct Interpreter{
     memory : Vec<i32>,
@@ -15,14 +16,14 @@ impl Interpreter{
         }
     }
 
-    pub fn run(&mut self,code:String)->Result<(),String>{
+    pub fn run(&mut self,code:String)->Result<(),ErrorKind>{
         let mut parser = Parser::new(code);
         let code = parser.parse()?;
         //println!("{:?}",code);
         self.core_run(&code,true)
     }
 
-    fn eval_command(&mut self,cmd : &Command)->Result<(),String>{
+    fn eval_command(&mut self,cmd : &Command)->Result<(),ErrorKind>{
         match cmd{
             Command::AddMemory(mem) =>
                 self.add_memory(*mem),
@@ -53,25 +54,25 @@ impl Interpreter{
         }
     }
 
-    fn add_memory(&mut self,mem:i32)->Result<(),String>{
+    fn add_memory(&mut self,mem:i32)->Result<(),ErrorKind>{
         self.memory[self.pointer] += mem;
         self.memory[self.pointer] &= 255;
         Ok(())
     }
 
-    fn add_pointer(&mut self,ptr:i32)->Result<(),String>{
+    fn add_pointer(&mut self,ptr:i32)->Result<(),ErrorKind>{
         let temp = self.pointer as i32 + ptr;
         self.pointer = self.check_pointer(temp)?;
 
         Ok(())
     }
 
-    fn assign(&mut self,v:i32)->Result<(),String>{
+    fn assign(&mut self,v:i32)->Result<(),ErrorKind>{
         self.memory[self.pointer] = v;
         Ok(())
     }
 
-    fn mult_add(&mut self,vs: &Vec<(i32,i32)>)->Result<(),String>{
+    fn mult_add(&mut self,vs: &Vec<(i32,i32)>)->Result<(),ErrorKind>{
         let times = self.memory[self.pointer];
 
         if times == 0{
@@ -89,7 +90,7 @@ impl Interpreter{
         Ok(())
     }
 
-    fn skip_while(&mut self,v:i32)->Result<(),String>{
+    fn skip_while(&mut self,v:i32)->Result<(),ErrorKind>{
         while self.memory[self.pointer] != 0{
             let temp = self.pointer as i32 + v;
             self.pointer = self.check_pointer(temp)?;
@@ -97,20 +98,20 @@ impl Interpreter{
         Ok(())
     }
 
-    fn output(&self)->Result<(),String>{
+    fn output(&self)->Result<(),ErrorKind>{
         let val = self.memory[self.pointer]; 
         print!("{}",((val as u8) as char));
         Ok(())
     }
 
-    fn input(&mut self)->Result<(),String>{
+    fn input(&mut self)->Result<(),ErrorKind>{
         unsafe{
             self.memory[self.pointer] = getchar() as i32;
         }
         Ok(())
     }
 
-    fn run_loop(&mut self,codes:&Vec<Command>) -> Result<(),String>{
+    fn run_loop(&mut self,codes:&Vec<Command>) -> Result<(),ErrorKind>{
         if self.memory[self.pointer] == 0{
             Ok(())
         }else{
@@ -118,7 +119,7 @@ impl Interpreter{
         }
     }
 
-    fn core_run(&mut self,code:&Vec<Command>,is_flat:bool)->Result<(),String>{
+    fn core_run(&mut self,code:&Vec<Command>,is_flat:bool)->Result<(),ErrorKind>{
         loop{
             for cmd in code.into_iter(){
                 // println!("{:?}",self.memory);
@@ -132,9 +133,9 @@ impl Interpreter{
         Ok(())
     }
 
-    fn check_pointer(&mut self,new_pointer:i32)->Result<usize,String>{
+    fn check_pointer(&mut self,new_pointer:i32)->Result<usize,ErrorKind>{
         if new_pointer < 0{
-            return Err(format!("pointer is negative"));
+            return Err(ErrorKind::NegativePointer);
         }
         let new_pointer = new_pointer as usize;
 

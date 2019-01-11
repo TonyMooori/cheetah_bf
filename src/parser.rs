@@ -1,5 +1,6 @@
 use command::Command;
 use optimizer::*;
+use errors::ErrorKind;
 
 pub struct Parser{
     code : Vec<char>,
@@ -21,7 +22,7 @@ impl Parser{
         }
     }
 
-    fn core_parse(&mut self)->Result<Command,String>{
+    fn core_parse(&mut self)->Result<Command,ErrorKind>{
         self.skip_meanless_char();
 
         let c : char= match self.code.get(self.index){
@@ -40,7 +41,7 @@ impl Parser{
                     self.read_loop(),
 
                 ']' =>
-                    Err(format!("too many ]")),
+                    Err(ErrorKind::ManyRightBraces),
 
                 ',' =>{
                     self.index += 1;
@@ -53,11 +54,11 @@ impl Parser{
                 },
 
                 _ => 
-                    Err(format!("something wrong")),
+                    Err(ErrorKind::ProgramBug),
         }
     }
 
-    fn read_add_memory(&mut self)->Result<Command,String>{
+    fn read_add_memory(&mut self)->Result<Command,ErrorKind>{
         let mut mem = 0 as i32;
 
         while let Some(c) = self.code.get(self.index){
@@ -73,7 +74,7 @@ impl Parser{
         Ok(Command::AddMemory(mem))
     }
 
-    fn read_add_pointer(&mut self)->Result<Command,String>{
+    fn read_add_pointer(&mut self)->Result<Command,ErrorKind>{
         let mut ptr = 0 as i32;
 
         while let Some(c) = self.code.get(self.index){
@@ -89,7 +90,7 @@ impl Parser{
         Ok(Command::AddPointer(ptr))
     }
 
-    fn read_loop(&mut self)->Result<Command,String>{
+    fn read_loop(&mut self)->Result<Command,ErrorKind>{
         let mut ret : Vec<Command>= Vec::new();
 
         self.index += 1;
@@ -99,7 +100,7 @@ impl Parser{
 
             let c : char = match self.code.get(self.index){
                 Some(v) => *v,
-                None => return Err(format!("too many [")),
+                None => return Err(ErrorKind::ManyLeftBraces),
             };
 
             if c == ']'{
@@ -113,7 +114,7 @@ impl Parser{
         Ok(Command::Loop(ret))
     }
 
-    pub fn parse(&mut self)->Result<Vec<Command>,String>{
+    pub fn parse(&mut self)->Result<Vec<Command>,ErrorKind>{
         let mut ret : Vec<Command>= Vec::new();
 
         loop{
@@ -125,7 +126,7 @@ impl Parser{
             };
 
             if c == ']'{
-                return Err(format!("too many ]"));
+                return Err(ErrorKind::ManyRightBraces);
             }else{
                 ret.push(self.core_parse()?);
             }

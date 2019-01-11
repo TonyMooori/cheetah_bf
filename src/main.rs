@@ -8,33 +8,35 @@ mod interpreter;
 mod command;
 mod parser;
 mod optimizer;
+mod errors;
 
 fn main() {
     let args : Vec<String> = env::args().skip(1).collect();
 
     if args.len() == 0{
-        println!("./brainfuck code.bf");
+        println!("Brainf*ck interpreter written by Rust.");
+        println!("usage: ./cheetah_bf code.bf");
         return;
     }
 
     let mut f = match File::open(args[0].clone()){
         Ok(v) => v,
         Err(_)=> {
-            println!("file not found");
+            println!("Error: Cannot open source code.");
             return;
         }
     };
 
     let mut code = String::new();
     if f.read_to_string(&mut code).is_err(){
-        println!("cannot read file");
+        println!("Error: Cannot read source code.");
         return;
     }
 
     let mut bf = interpreter::Interpreter::new();
     match bf.run(code){
         Ok(()) => {},
-        Err(s) => println!("{}",s),
+        Err(e) => println!("Error: {:?}",e),
     };
 }
 
