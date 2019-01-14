@@ -153,7 +153,7 @@ fn test000(){
     let xs = parser.parse();
     match xs{
         Ok(v) => eprintln!("{:?}",v),
-        Err(v) => eprintln!("{}",v),
+        Err(v) => eprintln!("{:?}",v),
     }
 }
 

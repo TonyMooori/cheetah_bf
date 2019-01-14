@@ -61,14 +61,14 @@ impl Interpreter{
     }
 
     fn add_pointer(&mut self,ptr:i32)->Result<(),ErrorKind>{
-        let temp = self.pointer as i32 + ptr;
-        self.pointer = self.check_pointer(temp)?;
+        self.pointer = self.calc_next_pointer(ptr)?;
 
         Ok(())
     }
 
     fn assign(&mut self,v:i32)->Result<(),ErrorKind>{
         self.memory[self.pointer] = v;
+
         Ok(())
     }
 
@@ -80,8 +80,7 @@ impl Interpreter{
         }
 
         for (move_ptr,val) in vs{
-            let temp = self.pointer as i32 + move_ptr;
-            let ptr = self.check_pointer(temp)?;
+            let ptr = self.calc_next_pointer(*move_ptr)?;
             self.memory[ptr] += times * val;
             self.memory[ptr] &= 255;
         }
@@ -92,8 +91,7 @@ impl Interpreter{
 
     fn skip_while(&mut self,v:i32)->Result<(),ErrorKind>{
         while self.memory[self.pointer] != 0{
-            let temp = self.pointer as i32 + v;
-            self.pointer = self.check_pointer(temp)?;
+            self.pointer = self.calc_next_pointer(v)?;
         }
         Ok(())
     }
@@ -133,10 +131,13 @@ impl Interpreter{
         Ok(())
     }
 
-    fn check_pointer(&mut self,new_pointer:i32)->Result<usize,ErrorKind>{
-        if new_pointer < 0{
+    fn calc_next_pointer(&mut self,ptr_change:i32)->Result<usize,ErrorKind>{
+        let new_pointer = self.pointer as i32 + ptr_change;
+
+        if new_pointer < 0 {
             return Err(ErrorKind::NegativePointer);
         }
+
         let new_pointer = new_pointer as usize;
 
         // realloc
@@ -145,7 +146,7 @@ impl Interpreter{
             self.memory.resize(new_size,0);
         }
 
-        Ok(new_pointer as usize)
+        Ok(new_pointer)
     }
 }
 
