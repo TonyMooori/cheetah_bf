@@ -40,9 +40,6 @@ impl Interpreter{
             Command::Loop(codes) =>
                 self.run_loop(codes),
 
-            Command::None =>
-                Ok(()), 
-
             Command::Assign(v) => 
                 self.assign(*v),
 

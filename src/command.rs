@@ -5,7 +5,6 @@ pub enum Command{
     Output,
     Input,
     Loop(Vec<Command>),
-    None,
     Assign(i32),
     MultAdd(Vec<(i32,i32)>),
     SkipWhile(i32),
