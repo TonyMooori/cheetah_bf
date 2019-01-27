@@ -1,7 +1,7 @@
 [package]
 name = "cheetah_bf"
-version = "0.1.0"
-authors = ["naft"]
+version = "1.0.0"
+authors = ["TonyMooori"]
 
 [dependencies]
 libc = { version = "0.2", default-features = false }
