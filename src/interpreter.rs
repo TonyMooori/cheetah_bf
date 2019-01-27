@@ -1,5 +1,4 @@
 use command::Command;
-use parser::Parser;
 use libc::getchar;
 use errors::ErrorKind;
 
@@ -16,11 +15,8 @@ impl Interpreter{
         }
     }
 
-    pub fn run(&mut self,code:String)->Result<(),ErrorKind>{
-        let mut parser = Parser::new(code);
-        let code = parser.parse()?;
-        //println!("{:?}",code);
-        self.core_run(&code,true)
+    pub fn run(&mut self,ast:&Vec<Command>)->Result<(),ErrorKind>{
+        self.core_run(ast,true)
     }
 
     fn eval_command(&mut self,cmd : &Command)->Result<(),ErrorKind>{

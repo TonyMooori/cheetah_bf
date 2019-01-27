@@ -3,6 +3,7 @@ extern crate libc;
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
+use parser::Parser;
 
 mod interpreter;
 mod command;
@@ -33,10 +34,19 @@ fn main() {
         return;
     }
 
+    let mut p = Parser::new(code);
+    let ast = match p.parse() {
+        Ok(ast) => ast,
+        Err(e) => {
+            println!("Parse error: {:?}",e);
+            return;
+        }
+    };
+
     let mut bf = interpreter::Interpreter::new();
-    match bf.run(code){
+    match bf.run(&ast){
         Ok(()) => {},
-        Err(e) => println!("Error: {:?}",e),
+        Err(e) => println!("Runtime error: {:?}",e),
     };
 }
 
