@@ -1,5 +1,5 @@
 # cheetah_bf
-Brainf*ck interpreter written by Rust.
+Brainf*ck interpreter written in Rust.
 
 ## Benchmark
 Input code: Mandelbrot set generator.  
